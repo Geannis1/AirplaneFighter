@@ -1,6 +1,9 @@
 let canvas = document.getElementById("gameCanvas");
 let ctx = canvas.getContext("2d"); //Here we get the canvas context. It will help us to draw on the canvas.
 
+const SPEED_VALUE = 10;
+const MAX_SPEED = 30;
+
 // Here we set the airplane(rectangle) dimensions & position on the canvas
 let rectWidth = 100;
 let rectHeight = 50;
@@ -12,14 +15,14 @@ let enemies = [];
 let enemyWidth = 50;
 let enemyHeight = 20;
 
-let speed = 10;
+let speed = SPEED_VALUE;
 let score = 0;
 
 let isPaused = false;
 let isGameOver = false;
 
 function drawRect() {
-    // Draw the airplane
+    // Here we draw the airplane
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "grey";
     ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
@@ -30,32 +33,40 @@ function drawRect() {
     });
 }
 
-function pause() {
-    isPaused = !isPaused;
-    document.getElementById("pauseButton").textContent = isPaused ? 'Resume' : 'Pause';
-}
+// Here we implement the move of the airplane by the mousemove
+canvas.addEventListener('mousemove', function(event) {
+    var rect = canvas.getBoundingClientRect();
+    rectX = event.clientX - rect.left - rectWidth / 2;
+    if(rectX < 0) rectX = 0;
+    if(rectX + rectWidth > canvas.width) rectX = canvas.width - rectWidth;
+    drawRect();
+});
 
-function increaseSpeed() {
-    if(speed < 30)
-    speed += 10;
+// Here we implement the move of the airplane by the keyboard
+window.addEventListener('keydown', function(event) {
+if(event.code === 'ArrowLeft') {
+rectX -= speed;
+if(rectX < 0) rectX = 0;
+} else if(event.code === 'ArrowRight') {
+rectX += speed;
+if(rectX + rectWidth > canvas.width) rectX = canvas.width - rectWidth;
 }
+drawRect();
+});
 
-function decreaseSpeed() {
-    if(speed > 10)
-    speed -= 10;
-}
-
+/* Here we push the enemies, move them around the canvas and update
+the scoreBoard as they are wxit the canvas */
 function updateEnemies() {
     // Move all enemies
     enemies.forEach(function(enemy) {
         enemy.y += 2;
     });
-    // Remove enemies that ar off the canvas
+    // Remove enemies that are off the canvas
     enemies = enemies.filter(function(enemy) {
         if(enemy.y < canvas.height) {
             return true;
         } else {
-            score++;
+            ++score;
             document.getElementById("scoreBoard").textContent = score;
             return false;
         }
@@ -77,14 +88,7 @@ setInterval(function() {
     checkCollisions();
 }, 50);
 
-canvas.addEventListener('mousemove', function(event) {
-            var rect = canvas.getBoundingClientRect();
-            rectX = event.clientX - rect.left - rectWidth / 2;
-            if(rectX < 0) rectX = 0;
-            if(rectX + rectWidth > canvas.width) rectX = canvas.width - rectWidth;
-            drawRect();
-        });
-
+// Here we check if the airplane is being hit by an enemy
 function checkCollisions() {
     for(let i = 0; i < enemies.length; ++i) {
         let enemy = enemies[i];
@@ -98,15 +102,19 @@ function checkCollisions() {
         }
     }
 
-window.addEventListener('keydown', function(event) {
-    if(event.code === 'ArrowLeft') {
-        rectX -= speed;
-        if(rectX < 0) rectX = 0;
-    } else if(event.code === 'ArrowRight') {
-        rectX += speed;
-        if(rectX + rectWidth > canvas.width) rectX = canvas.width - rectWidth;
-    }
-    drawRect();
-});
+function pause() {
+    isPaused = !isPaused;
+    document.getElementById("pauseButton").textContent = isPaused ? 'Resume' : 'Pause';
+}
+
+function increaseSpeed() {
+    if(speed < MAX_SPEED)
+    speed += SPEED_VALUE;
+}
+
+function decreaseSpeed() {
+    if(speed > SPEED_VALUE)
+    speed -= SPEED_VALUE;
+}
 
 
